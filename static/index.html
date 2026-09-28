@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจัดการเครื่องซักผ้า • ธนากร ไชยรัตน์</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e4defa 0%, #ede8fc 40%, #f6f3ff 100%);
+      --card-bg: #ffffff;
+      --card-shadow: 0 16px 36px rgba(118, 93, 219, 0.08), 0 2px 6px rgba(0, 0, 0, 0.02);
+      --primary-purple: #7c5cfc;
+      --primary-gradient: linear-gradient(135deg, #8765ff 0%, #6842f8 100%);
+      --btn-hover: linear-gradient(135deg, #7451fa 0%, #5833ee 100%);
+      
+      --badge-avail-bg: #e6f9f0;
+      --badge-avail-txt: #10b981;
+      --badge-inuse-bg: #fde8f1;
+      --badge-inuse-txt: #ec4899;
+      --badge-finished-bg: #fef3c7;
+      --badge-finished-txt: #d97706;
+      --badge-maint-bg: #fee2e2;
+      --badge-maint-txt: #ef4444;
+
+      --text-dark: #1e1b4b;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      --border-light: #f1f0f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Prompt', 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text-dark);
+      padding: 30px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating ambient 3D pastel bubbles like sketch reference */
+    .bubble {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(2px);
+    }
+    .bubble-1 {
+      width: 220px;
+      height: 220px;
+      top: 5%;
+      left: -50px;
+      background: radial-gradient(circle at 30% 30%, #c4b5fd 0%, #a78bfa 60%, #8b5cf6 100%);
+      opacity: 0.45;
+      animation: floatSlow 8s ease-in-out infinite alternate;
+    }
+    .bubble-2 {
+      width: 140px;
+      height: 140px;
+      top: 18%;
+      right: 2%;
+      background: radial-gradient(circle at 35% 35%, #fbcfe8 0%, #f472b6 70%, #ec4899 100%);
+      opacity: 0.4;
+      animation: floatSlow 10s ease-in-out infinite alternate-reverse;
+    }
+    .bubble-3 {
+      width: 90px;
+      height: 90px;
+      bottom: 12%;
+      left: 3%;
+      background: radial-gradient(circle at 35% 35%, #bae6fd 0%, #38bdf8 80%);
+      opacity: 0.4;
+    }
+    .bubble-4 {
+      width: 180px;
+      height: 180px;
+      bottom: 4%;
+      right: -30px;
+      background: radial-gradient(circle at 35% 35%, #ddd6fe 0%, #c084fc 90%);
+      opacity: 0.35;
+    }
+
+    @keyframes floatSlow {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(24px) rotate(15deg); }
+    }
+
+    /* Main Container Frame */
+    .app-frame {
+      max-width: 1140px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-radius: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 30px 60px rgba(100, 80, 180, 0.12), 0 4px 16px rgba(0, 0, 0, 0.03);
+      padding: 34px 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon-box {
+      width: 42px;
+      height: 42px;
+      background: var(--primary-gradient);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 6px 14px rgba(124, 92, 252, 0.35);
+      font-size: 22px;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.3px;
+    }
+    .brand-name span {
+      color: var(--primary-purple);
+      font-weight: 800;
+    }
+
+    .nav-center {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-item {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--primary-purple);
+      font-weight: 600;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .service-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f0fd;
+      color: var(--primary-purple);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-top {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(124, 92, 252, 0.25);
+      transition: all 0.2s;
+    }
+    .btn-top:hover {
+      box-shadow: 0 8px 20px rgba(124, 92, 252, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Hero Header */
+    .hero {
+      text-align: center;
+      margin: 24px auto 30px;
+      max-width: 680px;
+    }
+
+    .hero-subtitle-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--primary-purple);
+      background: #ede9fe;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Info & Counter Bar */
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 26px;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+    }
+
+    .student-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    .student-avatar {
+      width: 32px;
+      height: 32px;
+      background: #e0e7ff;
+      color: #4338ca;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .counter-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .counter-pill {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .counter-pill strong {
+      color: var(--text-dark);
+      font-weight: 700;
+    }
+
+    /* Machine Cards Grid */
+    .machines-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 26px;
+      border: 1px solid rgba(235, 235, 245, 0.9);
+      box-shadow: var(--card-shadow);
+      padding: 22px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 430px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 22px 42px rgba(118, 93, 219, 0.13);
+    }
+
+    /* Card Header */
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: -0.3px;
+    }
+
+    .pill-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .badge-available {
+      background: var(--badge-avail-bg);
+      color: var(--badge-avail-txt);
+
+
+      
+    }
+
+    .badge-in_use {
+      background: var(--badge-inuse-bg);
+      color: var(--badge-inuse-txt);
+    }
+
+    .badge-finished {
+      background: var(--badge-finished-bg);
+      color: var(--badge-finished-txt);
+    }
+
+    .badge-maintenance {
+      background: var(--badge-maint-bg);
+      color: var(--badge-maint-txt);
+    }
+
+    /* Sub-status Info inside Card */
+    .card-subtext {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      min-height: 20px;
+      margin-bottom: 4px;
+    }
+
+    .progress-section {
+      margin: 4px 0 8px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .user-avatar-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .time-rem-label {
+      font-weight: 700;
+      color: var(--primary-purple);
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 6px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 10px;
+      transition: width 1s linear;
+    }
+
+    /* ========================================================
+       Ultra-realistic Front-Loading Washing Machine Appliance
+       ======================================================== */
+    .wm-appliance {
+      width: 210px;
+      height: 236px;
+      margin: 6px auto 10px;
+      background: linear-gradient(180deg, #ffffff 0%, #f6f8fb 60%, #e5e9f0 100%);
+      border-radius: 22px;
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      box-shadow: 0 14px 28px rgba(118, 93, 219, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.95), inset 0 -3px 5px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      padding: 9px 12px 6px;
+    }
+
+    /* Top Control Panel */
+    .wm-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 38px;
+      background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+      border-radius: 10px;
+      padding: 4px 8px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .wm-drawer {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+    .wm-drawer-handle {
+      width: 32px;
+      height: 6px;
+      background: #cbd5e1;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .wm-drawer-text {
+      font-size: 8px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
+    .wm-dial {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 80%, #94a3b8 100%);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      border: 1px solid #94a3b8;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wm-dial-notch {
+      width: 2px;
+      height: 7px;
+      background: #475569;
+      position: absolute;
+      top: 2px;
+      border-radius: 1px;
+    }
+
+    .wm-display {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 2px 7px;
+      text-align: right;
+      min-width: 54px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+      border: 1px solid #334155;
+    }
+    .wm-led-time {
+      font-family: 'Plus Jakarta Sans', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+    }
+    .wm-led-status {
+      font-size: 7.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* Drum & Door Center Area */
+    .wm-body {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px auto;
+      width: 146px;
+      height: 146px;
+    }
+
+    .wm-porthole {
+      width: 142px;
+      height: 142px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border: 2px solid #e2e8f0;
+    }
+
+    .wm-glass {
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 45% 45%, #475569 0%, #1e293b 70%, #090d16 100%);
+      box-shadow: inset 0 6px 16px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wm-drum-chamber {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .wm-perforations {
+      position: absolute;
+      width: 90%;
+      height: 90%;
+      border-radius: 50%;
+      background-image: radial-gradient(#64748b 1.2px, transparent 1.2px);
+      background-size: 8px 8px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .wm-drum-hub {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #94a3b8 0%, #475569 100%);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      border: 2px solid #64748b;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .wm-hub-cap {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    /* Water Swirl Animation when Washing */
+    .water-bubble-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px dashed rgba(56, 189, 248, 0.7);
+      animation: waterSwirl 1.8s linear infinite;
+      z-index: 1;
+    }
+    @keyframes waterSwirl {
+      0% { transform: rotate(0deg) scale(0.95); opacity: 0.7; }
+      50% { transform: rotate(180deg) scale(1.02); opacity: 1; }
+      100% { transform: rotate(360deg) scale(0.95); opacity: 0.7; }
+    }
+
+    .tumble-clothes {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.8), rgba(99, 102, 241, 0.8));
+      filter: blur(1px);
+      animation: tumble 1.5s ease-in-out infinite alternate;
+      z-index: 1;
+    }
+    @keyframes tumble {
+      0% { transform: translate(-10px, -6px) rotate(0deg); }
+      100% { transform: translate(10px, 8px) rotate(180deg); }
+    }
+
+    /* 3D Realistic Open Door for AVAILABLE State */
+    .wm-open-door {
+      position: absolute;
+      left: -32px;
+      top: -2px;
+      width: 70px;
+      height: 144px;
+      border-radius: 60px 10px 10px 60px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(203, 213, 225, 0.85) 60%, rgba(148, 163, 184, 0.7) 100%);
+      border: 3px solid #ffffff;
+      box-shadow: -10px 14px 24px rgba(0, 0, 0, 0.16);
+      transform: perspective(400px) rotateY(-46deg);
+      z-index: 5;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+    }
+    .wm-door-handle {
+      width: 6px;
+      height: 40px;
+      background: #475569;
+      border-radius: 4px;
+      box-shadow: -1px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Sparkle when Finished */
+    .wm-sparkle {
+      position: absolute;
+      font-size: 38px;
+      z-index: 3;
+      animation: sparklePulse 1.8s ease-in-out infinite;
+    }
+    @keyframes sparklePulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px #fbbf24); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 10px #f59e0b); }
+    }
+
+    /* Bottom Kick-plate / Plinth */
+    .wm-plinth {
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 8px;
+      border-top: 1px solid rgba(203, 213, 225, 0.6);
+    }
+    .wm-filter-cap {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      border: 1px solid #94a3b8;
+    }
+
+    /* Card Footer Buttons */
+    .card-footer {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: var(--primary-gradient);
+      color: white;
+      box-shadow: 0 6px 18px rgba(124, 92, 252, 0.28);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-main:hover {
+      background: var(--btn-hover);
+      box-shadow: 0 8px 22px rgba(124, 92, 252, 0.38);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: #edf2f7;
+    }
+
+    .btn-cancel {
+      background: #fff1f2;
+      color: #e11d48;
+      border: 1px solid #ffe4e6;
+    }
+    .btn-cancel:hover {
+      background: #ffe4e6;
+    }
+
+    .btn-reset-now {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #d1fae5;
+    }
+    .btn-reset-now:hover {
+      background: #d1fae5;
+    }
+
+    /* Live Session History & Endpoints Table */
+    .section-box {
+      background: #ffffff;
+      border-radius: 26px;
+      border: 1px solid rgba(235, 235, 245, 0.9);
+      box-shadow: var(--card-shadow);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+
+    .box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .box-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-subtle);
+      font-weight: 600;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12px;
+    }
+
+    td {
+      padding: 12px 12px;
+      border-bottom: 1px solid #f8fafc;
+      color: var(--text-dark);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* API Endpoint Callout */
+    .api-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .api-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px 20px;
+    }
+
+    .api-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-purple);
+      margin-bottom: 6px;
+    }
+
+    .api-card code {
+      display: inline-block;
+      background: #ede9fe;
+      color: #6d28d9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .api-card p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--text-dark);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating pastel bubbles -->
+  <div class="bubble bubble-1"></div>
+  <div class="bubble bubble-2"></div>
+  <div class="bubble bubble-3"></div>
+  <div class="bubble bubble-4"></div>
+
+  <div class="app-frame">
+    <!-- Navbar -->
+    <header class="navbar">
+      <a href="#" class="brand">
+        <div class="brand-icon-box">🧺</div>
+        <div class="brand-name">เครื่องซักผ้า<span>ออนไลน์</span></div>
+      </a>
+
+      <nav class="nav-center">
+        <a href="#machines-section" class="nav-item active">หน้ารายการเครื่อง</a>
+        <a href="#history-section" class="nav-item">ประวัติการซัก</a>
+        <a href="#notifications-section" class="nav-item">🔔 การแจ้งเตือน (ศรายุทธ)</a>
+        <a href="#api-section" class="nav-item">คู่มือเชื่อมต่อ API</a>
+      </nav>
+
+      <div class="nav-right">
+        <div class="service-badge">
+          <span class="status-dot"></span>
+          <span>พอร์ต 8082 • พร้อมใช้งาน</span>
+        </div>
+        <button class="btn-top" onclick="fetchData()">🔄 รีเฟรชข้อมูล</button>
+      </div>
+    </header>
+
+    <!-- Hero Header -->
+    <section class="hero">
+      <span class="hero-subtitle-tag">ระบบจัดการสถานะเครื่องซักผ้า (Machine Service)</span>
+      <h1>เลือกเครื่องซักผ้า แล้วกดเริ่มได้เลย!</h1>
+      <p>ตรวจสอบสถานะเครื่องว่างแบบเรียลไทม์ พร้อมระบบนับถอยหลังและแจ้งเตือนอัตโนมัติเมื่อซักเสร็จ</p>
+    </section>
+
+    <!-- Info & Counter Bar -->
+    <div class="info-bar">
+      <div class="student-badge">
+        <div class="student-avatar">ธน</div>
+        <div>ผู้รับผิดชอบ: <strong>ธนากร ไชยรัตน์ (67114540244)</strong></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; background: #f1f0fd; padding: 5px 12px; border-radius: 12px; border: 1px solid #e0e7ff;">
+        <label for="current-user-input" style="font-weight: 600; color: var(--primary-purple); font-size: 12.5px;">👤 ผู้ใช้งานปัจจุบัน (User ID):</label>
+        <input id="current-user-input" type="number" min="1" value="1" style="width: 58px; padding: 4px 8px; border-radius: 8px; border: 1px solid #c4b5fd; font-weight: 700; text-align: center; font-size: 13px; color: #4338ca; background: white;">
+      </div>
+      <div class="counter-group">
+        <div class="counter-pill">ทั้งหมด: <strong id="cnt-total">0</strong></div>
+        <div class="counter-pill">🟢 ว่าง: <strong id="cnt-avail" style="color: #10b981;">0</strong></div>
+        <div class="counter-pill">🌸 กำลังซัก: <strong id="cnt-inuse" style="color: #ec4899;">0</strong></div>
+        <div class="counter-pill">🟡 ซักเสร็จ: <strong id="cnt-done" style="color: #d97706;">0</strong></div>
+      </div>
+    </div>
+
+    <!-- Machine Cards Section -->
+    <section id="machines-section" class="machines-grid">
+      <!-- Dynamic rendering via JavaScript -->
+    </section>
+
+    <!-- Recent History Section -->
+    <section id="history-section" class="section-box">
+      <div class="box-header">
+        <div class="box-title">
+          <span>📜</span>
+          <span>ประวัติรอบการซักผ้าล่าสุด (ดึงสดจากฐานข้อมูล SQLite)</span>
+        </div>
+        <span style="font-size: 12px; color: var(--text-subtle);">อัปเดตอัตโนมัติทุก 2 วินาที</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>รหัสรอบ</th>
+            <th>เครื่องซักผ้า</th>
+            <th>ผู้ใช้งาน</th>
+            <th>เวลาเริ่มซัก</th>
+            <th>เวลาเสร็จสิ้น</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody id="sessions-tbody">
+          <tr><td colspan="6" style="text-align: center; color: var(--text-subtle);">กำลังดึงข้อมูล...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Real-time Notifications from Sarayut's Service -->
+    <section id="notifications-section" class="section-box" style="border-left: 5px solid #8b5cf6;">
+      <div class="box-header">
+        <div class="box-title">
+          <span>🔔</span>
+          <span>กล่องแจ้งเตือนผู้ใช้งาน (ดึงสดจาก Notification Service ของศรายุทธ)</span>
+          <span style="background: #ede9fe; color: #6d28d9; padding: 3px 9px; border-radius: 8px; font-size: 11.5px; font-weight: 700; margin-left: 8px;">notification_db</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span id="notif-count-badge" class="pill-badge" style="background: #ede9fe; color: #7c3aed; font-weight: 700;">0 รายการ</span>
+          <button class="btn-top" style="padding: 5px 12px; font-size: 12px;" onclick="fetchNotifications()">🔄 รีเฟรช</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>รหัสแจ้งเตือน</th>
+            <th>ผู้รับ (User)</th>
+            <th>เครื่อง</th>
+            <th>ข้อความแจ้งเตือน (Message)</th>
+            <th>วันเวลาที่ส่ง</th>
+            <th>สถานะการอ่าน</th>
+          </tr>
+        </thead>
+        <tbody id="notifications-tbody">
+          <tr><td colspan="6" style="text-align: center; color: var(--text-subtle);">กำลังดึงข้อมูลจาก Notification Service...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- API Reference for Friends -->
+    <section id="api-section" class="section-box">
+      <div class="box-header">
+        <div class="box-title">
+          <span>🔗</span>
+          <span>ข้อมูลสำหรับเพื่อนในกลุ่มนำไปเชื่อมต่อ (API Endpoints)</span>
+        </div>
+      </div>
+      <div class="api-card-grid">
+        <div class="api-card">
+          <h4>1. เพื่อนฝั่ง Auth / สั่งซักผ้า (ชนะภพ)</h4>
+          <code>POST /machines/:id/start</code>
+          <p>ส่งคำสั่งเริ่มซักผ้า: ส่งแค่ <code>{"user_id": 1}</code> ได้เลย (ระบบตั้งเวลาเริ่มต้น 40 วินาทีให้อัตโนมัติ หรือส่ง <code>"duration_seconds": 15</code> เพื่อเดโมสด)</p>
+        </div>
+        <div class="api-card">
+          <h4>2. เพื่อนฝั่ง แจ้งเตือน (ศรายุทธ)</h4>
+          <code>GET /sessions?status=COMPLETED</code>
+          <p>ดึงรายการที่ซักเสร็จไปแจ้งเตือนผู้ใช้: ระบบ Auto-Finish Worker จะเปลี่ยนสถานะให้ทันทีที่ครบเวลา และจะคงสถานะไว้ 30 วินาทีเพื่อรอให้แจ้งเตือน</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3200);
+    }
+
+    async function fetchData() {
+      try {
+        const [mRes, sRes] = await Promise.all([
+          fetch('/machines'),
+          fetch('/sessions')
+        ]);
+        const machines = await mRes.json();
+        const sessions = await sRes.json();
+
+        updateCounters(machines);
+        renderMachines(machines);
+        renderSessions(sessions);
+      } catch (err) {
+        console.error('Fetch err:', err);
+      }
+    }
+
+    function updateCounters(machines) {
+      document.getElementById('cnt-total').innerText = machines.length;
+      document.getElementById('cnt-avail').innerText = machines.filter(m => m.status === 'AVAILABLE').length;
+      document.getElementById('cnt-inuse').innerText = machines.filter(m => m.status === 'IN_USE').length;
+      document.getElementById('cnt-done').innerText = machines.filter(m => m.status === 'FINISHED').length;
+    }
+
+    function renderMachines(machines) {
+      const container = document.getElementById('machines-section');
+      container.innerHTML = '';
+
+      machines.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        let badgeClass = 'badge-available';
+        let badgeText = 'ว่าง (พร้อมใช้งาน)';
+        let subTextHTML = '';
+        let doorOpenHTML = '';
+        let drumInteriorHTML = '';
+        let ledText = 'READY';
+        let ledSub = 'START';
+        let footerHTML = '';
+
+        if (m.status === 'AVAILABLE') {
+          badgeClass = 'badge-available';
+          badgeText = 'ว่าง (พร้อมใช้)';
+          doorOpenHTML = `
+            <div class="wm-open-door">
+              <div class="wm-door-handle"></div>
+            </div>
+          `;
+          subTextHTML = '<div class="card-subtext" style="color: #10b981;">✨ ฝาเปิดอยู่ พร้อมเริ่มซักทันที</div>';
+          ledText = 'READY';
+          ledSub = 'STANDBY';
+
+          footerHTML = `
+            <button class="btn-main" onclick="startMachine(${m.id}, 15, true)">
+              🚀 เดโมซักด่วน (15 วินาที)
+            </button>
+            <button class="btn-secondary" onclick="startMachine(${m.id}, 40, true)">
+              ⏱️ เริ่มซักปกติ (40 วินาที)
+            </button>
+          `;
+        } else if (m.status === 'IN_USE') {
+          badgeClass = 'badge-inuse';
+          badgeText = 'กำลังซักผ้า';
+          
+          let sec = m.remaining_seconds != null ? m.remaining_seconds : 0;
+          let mPart = Math.floor(sec / 60);
+          let sPart = sec % 60;
+          let timeFormatted = `${mPart} นาที ${sPart > 0 ? sPart + ' วิ' : ''}`;
+          let percent = Math.min(100, Math.max(10, 100 - (sec / (40 * 60) * 100)));
+
+          ledText = `${String(mPart).padStart(2, '0')}:${String(sPart).padStart(2, '0')}`;
+          ledSub = 'WASHING';
+
+          drumInteriorHTML = `
+            <div class="water-bubble-ring"></div>
+            <div class="tumble-clothes"></div>
+          `;
+
+          let userBadgeText = m.user_name ? `👤 ${m.user_name} (#${m.user_id})` : `👤 ผู้ใช้ #${m.user_id || 1}`;
+          let userSubEmail = m.user_email ? `<span style="font-size: 11px; opacity: 0.8; margin-left: 4px;">(${m.user_email})</span>` : '';
+          subTextHTML = `
+            <div class="progress-section">
+              <div class="progress-top">
+                <span class="user-avatar-small">${userBadgeText} ${userSubEmail}</span>
+                <span class="time-rem-label">${timeFormatted}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: ${percent}%;"></div>
+              </div>
+            </div>
+          `;
+
+          footerHTML = `
+            <button class="btn-main btn-cancel" onclick="finishMachine(${m.id})">
+              ⏹️ สั่งหยุดการทำงานทันที
+            </button>
+          `;
+        } else if (m.status === 'FINISHED') {
+          badgeClass = 'badge-finished';
+          badgeText = 'ซักเสร็จแล้ว';
+          let resetSec = m.remaining_seconds != null ? m.remaining_seconds : 30;
+
+          ledText = 'DONE';
+          ledSub = 'READY';
+
+          drumInteriorHTML = `
+            <div class="wm-sparkle">🧺✨</div>
+          `;
+
+          subTextHTML = `
+            <div class="card-subtext" style="color: #d97706;">
+              🔔 ซักเสร็จแล้ว! (จะรีเซ็ตเครื่องว่างใน ${resetSec} วิ)
+            </div>
+          `;
+
+          footerHTML = `
+            <button class="btn-main btn-reset-now" onclick="resetMachine(${m.id})">
+              ✅ ผู้ใช้รับผ้าแล้ว (รีเซ็ตว่างทันที)
+            </button>
+            <button class="btn-secondary" onclick="startMachine(${m.id}, 15, true)">
+              🚀 เริ่มซักรอบใหม่ต่อได้เลย
+            </button>
+          `;
+        } else if (m.status === 'MAINTENANCE') {
+          badgeClass = 'badge-maintenance';
+          badgeText = 'ปิดปรับปรุง / ซ่อม';
+          ledText = 'ERR';
+          ledSub = 'MAINT';
+          drumInteriorHTML = `<div style="font-size: 32px; z-index: 3;">⚠️</div>`;
+          subTextHTML = '<div class="card-subtext" style="color: #ef4444;">⚠️ เครื่องอยู่ระหว่างการซ่อมบำรุง</div>';
+          
+          footerHTML = `
+            <button class="btn-secondary" onclick="resetMachine(${m.id})">
+              🛠️ ซ่อมเสร็จแล้ว (เปิดใช้งาน)
+            </button>
+          `;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="card-head">
+              <div class="card-title">เครื่องซักผ้า หมายเลข ${m.id}</div>
+              <span class="pill-badge ${badgeClass}">${badgeText}</span>
+            </div>
+
+            ${subTextHTML}
+
+            <!-- Realistic Washing Machine Appliance -->
+            <div class="wm-appliance">
+              <!-- Top Control Panel -->
+              <div class="wm-panel">
+                <div class="wm-drawer">
+                  <div class="wm-drawer-handle"></div>
+                  <span class="wm-drawer-text">DETERGENT</span>
+                </div>
+                <div class="wm-dial">
+                  <div class="wm-dial-notch"></div>
+                </div>
+                <div class="wm-display">
+                  <div class="wm-led-time">${ledText}</div>
+                  <div class="wm-led-status">${ledSub}</div>
+                </div>
+              </div>
+
+              <!-- Center Drum Body -->
+              <div class="wm-body">
+                ${doorOpenHTML}
+                <div class="wm-porthole">
+                  <div class="wm-glass">
+                    <div class="wm-drum-chamber">
+                      <div class="wm-perforations"></div>
+                      ${drumInteriorHTML}
+                      <div class="wm-drum-hub">
+                        <div class="wm-hub-cap"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Plinth -->
+              <div class="wm-plinth">
+                <div class="wm-filter-cap"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            ${footerHTML}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderSessions(sessions) {
+      const tbody = document.getElementById('sessions-tbody');
+      tbody.innerHTML = '';
+
+      if (!sessions || sessions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-subtle);">ยังไม่มีประวัติการใช้งาน</td></tr>';
+        return;
+      }
+
+      sessions.slice(0, 6).forEach(s => {
+        const tr = document.createElement('tr');
+        const startStr = s.started_at ? new Date(s.started_at).toLocaleTimeString('th-TH') : '-';
+        const finishStr = s.completed_at 
+          ? new Date(s.completed_at).toLocaleTimeString('th-TH') 
+          : (s.finish_at ? new Date(s.finish_at).toLocaleTimeString('th-TH') : '-');
+
+        let badge = s.status === 'RUNNING' 
+          ? '<span class="pill-badge badge-inuse">กำลังซัก</span>' 
+          : '<span class="pill-badge badge-available">เสร็จสมบูรณ์</span>';
+
+        let userCol = s.user_name ? `<span class="user-avatar-small">👤 ${s.user_name} (#${s.user_id})</span>` : `<span class="user-avatar-small">👤 ผู้ใช้ #${s.user_id}</span>`;
+        if (s.user_email) {
+          userCol += `<div style="font-size: 11px; color: var(--text-subtle); margin-top: 2px;">${s.user_email}</div>`;
+        }
+
+        tr.innerHTML = `
+          <td><strong>#${s.id}</strong></td>
+          <td>เครื่องหมายเลข ${s.machine_id}</td>
+          <td>${userCol}</td>
+          <td>${startStr}</td>
+          <td>${finishStr}</td>
+          <td>${badge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Actions
+    async function startMachine(id, duration, isSeconds) {
+      try {
+        let activeUserId = 1;
+        const userInput = document.getElementById('current-user-input');
+        if (userInput && userInput.value) {
+          activeUserId = parseInt(userInput.value) || 1;
+        }
+
+        const body = { user_id: activeUserId };
+        if (isSeconds) {
+          body.duration_seconds = duration;
+        } else {
+          body.duration = duration;
+        }
+
+        const res = await fetch(`/machines/${id}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          showToast(`🚀 เครื่องหมายเลข ${id} เริ่มทำงานแล้ว! (${isSeconds ? duration + ' วินาที' : duration + ' นาที'})`);
+          fetchData();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'ไม่สามารถสั่งเริ่มเครื่องได้');
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    async function finishMachine(id) {
+      try {
+        const res = await fetch(`/machines/${id}/finish`, { method: 'POST' });
+        if (res.ok) {
+          showToast(`⏹️ เครื่องหมายเลข ${id} สั่งหยุดทำงานเสร็จสิ้นแล้ว!`);
+          fetchData();
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    async function resetMachine(id) {
+      try {
+        const res = await fetch(`/machines/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'AVAILABLE' })
+        });
+        if (res.ok) {
+          showToast(`✅ เครื่องหมายเลข ${id} รีเซ็ตเป็นสถานะว่าง พร้อมใช้งาน`);
+          fetchData();
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    async function fetchNotifications() {
+      try {
+        const res = await fetch('/notifications/external');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data)) return;
+
+        const tbody = document.getElementById('notifications-tbody');
+        const badge = document.getElementById('notif-count-badge');
+        if (badge) badge.innerText = `${data.length} รายการ`;
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-subtle);">ยังไม่มีรายการแจ้งเตือน</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach(item => {
+          const tr = document.createElement('tr');
+          const timeStr = item.created_at ? new Date(item.created_at).toLocaleString('th-TH') : '-';
+          const readBadge = item.is_read 
+            ? '<span class="pill-badge" style="background: #e2e8f0; color: #475569;">อ่านแล้ว</span>' 
+            : '<span class="pill-badge badge-inuse">ยังไม่อ่าน</span>';
+
+          const userText = item.user_id === 2 ? '👤 ชนะภพ (#2)' : `👤 ผู้ใช้ #${item.user_id}`;
+
+          tr.innerHTML = `
+            <td><strong>#${item.id}</strong></td>
+            <td><span class="user-avatar-small">${userText}</span></td>
+            <td>เครื่องหมายเลข ${item.machine_id}</td>
+            <td style="font-weight: 600; color: #4338ca;">${item.message}</td>
+            <td>${timeStr}</td>
+            <td>${readBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Fetch notif err:', err);
+      }
+    }
+
+    // Auto-sync every 2s
+    fetchData();
+    fetchNotifications();
+    setInterval(fetchData, 2000);
+    setInterval(fetchNotifications, 3000);
+  </script>
+</body>
+</html>
